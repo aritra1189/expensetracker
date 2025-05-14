@@ -1,5 +1,3 @@
-// File: config/db.js (ESM version)
-
 import mongoose from 'mongoose';
 
 export const db = async () => {

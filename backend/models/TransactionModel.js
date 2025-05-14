@@ -20,6 +20,11 @@ const transactionSchema = new mongoose.Schema({
         required: [true, "Category is required"],
         
     },
+    subcategory: {
+        type: String,
+        required: [true, "Subcategory is required"],
+        
+    },
 
     description: {
         type: String,
@@ -29,6 +34,11 @@ const transactionSchema = new mongoose.Schema({
     transactionType: {
         type: String,
         required: [true, "Transaction Type is required"],
+        
+    },
+    method: {
+        type: String,
+        required: [true, "Method is required"],
         
     },
 

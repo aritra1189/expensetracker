@@ -15,7 +15,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import Analytics from "./Analytics";
-import DataTable from "../../components/Table";
+import Stats from "../../components/Stats";
+
 
 const Home = () => {
   const navigate = useNavigate();
@@ -85,6 +86,8 @@ const Home = () => {
     amount: "",
     description: "",
     category: "",
+    subcategory: "",
+    method: "",
     date: "",
     transactionType: "",
   });
@@ -104,7 +107,7 @@ const Home = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { title, amount, description, category, date, transactionType } =
+    const { title, amount, description, category, subcategory,method,date, transactionType } =
       values;
 
     if (
@@ -112,6 +115,8 @@ const Home = () => {
       !amount ||
       !description ||
       !category ||
+      !subcategory ||
+      !method ||
       !date ||
       !transactionType
     ) {
@@ -124,6 +129,8 @@ const Home = () => {
       amount: amount,
       description: description,
       category: category,
+      subcategory: subcategory,
+      method: method,
       date: date,
       transactionType: transactionType,
       userId: cUser._id,
@@ -146,30 +153,28 @@ const Home = () => {
     setEndDate(null);
     setFrequency("7");
   };
-
-
-  
-
-
 useEffect(() => {
   const fetchAllTransactions = async () => {
     try {
       setLoading(true);
 
       const startDateStr = startDate ? startDate.toISOString().split("T")[0] : null;
-      const endDateStr = endDate ? endDate.toISOString().split("T")[0] : null;
 
-      console.log(cUser._id, frequency, startDateStr, endDateStr, type);
+      let endDateStr = null;
+      if (endDate) {
+        const tempEndDate = new Date(endDate);
+        tempEndDate.setHours(23, 59, 59, 999); // include the full end date
+        endDateStr = tempEndDate.toISOString();
+      }
 
       const { data } = await axios.post(getTransactions, {
         userId: cUser._id,
-        frequency: frequency,
+        frequency,
         startDate: startDateStr,
         endDate: endDateStr,
-        type: type,
+        type,
       });
 
-      console.log("Response from API: ", data);
       setTransactions(data.transactions);
       setLoading(false);
     } catch (err) {
@@ -179,7 +184,8 @@ useEffect(() => {
   };
 
   if (cUser) fetchAllTransactions();
-}, [refresh, frequency, startDate, endDate, type]);
+}, [refresh,cUser, frequency, startDate, endDate, type]);
+
 
 
   const handleTableClick = (e) => {
@@ -308,6 +314,22 @@ useEffect(() => {
                           <option value="Other">Other</option>
                         </Form.Select>
                       </Form.Group>
+                      <Form.Group className="mb-3" controlId="formSelect2">
+                        <Form.Label>Subcategory</Form.Label>
+                        <Form.Select
+                          name="subcategory"
+                          value={values.subcategory}
+                          onChange={handleChange}
+                        >
+                          <option value="">Choose...</option>
+                          <option value="Food">Food</option>
+                          <option value="Clothing">Clothing</option>
+
+                          <option value="Transportation">Transportation</option>
+                          <option value="Entertainment">Entertainment</option>
+                          <option value="Other">Other</option>
+                        </Form.Select>
+                      </Form.Group>
 
                       <Form.Group className="mb-3" controlId="formDescription">
                         <Form.Label>Description</Form.Label>
@@ -332,6 +354,23 @@ useEffect(() => {
                           <option value="expense">Expense</option>
                         </Form.Select>
                       </Form.Group>
+                      <Form.Group className="mb-3" controlId="formSelect3">
+                        <Form.Label>Method</Form.Label>
+                        <Form.Select
+                          name="method"
+                          value={values.method}
+                          onChange={handleChange}
+                        >
+                          <option value="">Choose...</option>
+                          <option value="Cash">Cash</option>
+                          <option value="Credit Card">Credit Card</option>
+                          <option value="Debit Card">Debit Card</option>
+                          <option value="UPI">UPI</option>
+                          <option value="Net Banking">Net Banking</option>
+                          <option value="Other">Other</option>
+                        </Form.Select>
+                      </Form.Group>
+                      
 
                       <Form.Group className="mb-3" controlId="formDate">
                         <Form.Label>Date</Form.Label>
@@ -397,7 +436,7 @@ useEffect(() => {
               <></>
             )}
             <div className="balanceBox">
-              <h3 className="text-white">Current Balance: ₹{calculateBalance().toFixed(2)}</h3>
+             <Stats/>
             </div>
 
             <div className="containerBtn">

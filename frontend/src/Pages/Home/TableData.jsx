@@ -6,16 +6,15 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { Pagination } from "@mui/material";
 import axios from "axios";
 
-import { deleteTransactions, editTransactions } from "../../utils/ApiRequest";
+import { deleteTransactions, editTransactions, getTransactions } from "../../utils/ApiRequest";
 import "./home.css";
 
 const TableData = (props) => {
   const [show, setShow] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [currId, setCurrId] = useState(null);
-  const [refresh, setRefresh] = useState(false);
-  const [user, setUser] = useState(null);
   const [page, setPage] = useState(1);
+  const [user, setUser] = useState(null);
   const rowsPerPage = 5;
 
   const [values, setValues] = useState({
@@ -24,6 +23,8 @@ const TableData = (props) => {
     description: "",
     category: "",
     date: "",
+    method: "",
+    subcategory: "",
     transactionType: "",
   });
 
@@ -35,7 +36,7 @@ const TableData = (props) => {
   const handleShow = () => setShow(true);
 
   const handleEditClick = (itemKey) => {
-    const editTran = props.data.find((item) => item._id === itemKey);
+    const editTran = transactions.find((item) => item._id === itemKey);
     if (editTran) {
       setCurrId(itemKey);
       setValues({
@@ -43,6 +44,8 @@ const TableData = (props) => {
         amount: editTran.amount,
         description: editTran.description,
         category: editTran.category,
+        subcategory: editTran.subcategory,
+        method: editTran.method,
         date: moment(editTran.date).format("YYYY-MM-DD"),
         transactionType: editTran.transactionType,
       });
@@ -50,13 +53,16 @@ const TableData = (props) => {
     }
   };
 
+ 
+
+
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
       const { data } = await axios.put(`${editTransactions}/${currId}`, values);
       if (data.success === true) {
         handleClose();
-        setRefresh(!refresh);
+       
       } else {
         console.error("Edit failed");
       }
@@ -68,10 +74,11 @@ const TableData = (props) => {
   const handleDeleteClick = async (itemKey) => {
     try {
       const { data } = await axios.post(`${deleteTransactions}/${itemKey}`, {
-        userId: props.user._id,
+        userId: user._id,
+        // transaction: itemKey,
       });
       if (data.success === true) {
-        setRefresh(!refresh);
+   
       } else {
         console.error("Delete failed");
       }
@@ -83,7 +90,7 @@ const TableData = (props) => {
   useEffect(() => {
     setUser(props.user);
     setTransactions(props.data);
-  }, [props.data, props.user, refresh]);
+  }, [props.data, props.user]);
 
   const handlePageChange = (event, value) => {
     setPage(value);
@@ -104,25 +111,29 @@ const TableData = (props) => {
             <th>Amount</th>
             <th>Type</th>
             <th>Category</th>
+            <th>Subcategory</th>
+            <th>Method</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody className="text-white">
-          {currentTransactions.map((item, index) => (
+          {currentTransactions.map((item) => (
             <tr key={item._id}>
               <td>{moment(item.date).format("YYYY-MM-DD")}</td>
               <td>{item.title}</td>
               <td>{item.amount}</td>
               <td>{item.transactionType}</td>
               <td>{item.category}</td>
+              <td>{item.subcategory}</td>
+              <td>{item.method}</td>
               <td>
-                <div className="icons-handle">
+                <div className="d-flex gap-2 justify-content-center">
                   <EditNoteIcon
-                    sx={{ cursor: "pointer" }}
+                    sx={{ cursor: "pointer", color: "#0d6efd" }}
                     onClick={() => handleEditClick(item._id)}
                   />
                   <DeleteForeverIcon
-                    sx={{ color: "red", cursor: "pointer" }}
+                    sx={{ cursor: "pointer", color: "red" }}
                     onClick={() => handleDeleteClick(item._id)}
                   />
                 </div>
@@ -193,6 +204,26 @@ const TableData = (props) => {
             </Form.Group>
 
             <Form.Group className="mb-3">
+              <Form.Label>Subcategory</Form.Label>
+              <Form.Control
+                type="text"
+                name="subcategory"
+                value={values.subcategory}
+                onChange={handleChange}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Method</Form.Label>
+              <Form.Control
+                type="text"
+                name="method"
+                value={values.method}
+                onChange={handleChange}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
               <Form.Label>Description</Form.Label>
               <Form.Control
                 as="textarea"
@@ -237,4 +268,5 @@ const TableData = (props) => {
 };
 
 export default TableData;
+
 
